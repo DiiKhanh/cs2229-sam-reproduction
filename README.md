@@ -2,6 +2,20 @@
 
 Repository lưu tài liệu, notebook và kết quả thực nghiệm của nhóm khi tái lập một phần bài báo *Sharpness-Aware Minimization for Efficiently Improving Generalization* (ICLR 2021).
 
+## Thông tin nhóm
+
+- **Môn học:** CS2229.26.1.CH.01
+- **Nhóm:** 6
+- **Đề tài:** *Sharpness-Aware Minimization for Efficiently Improving Generalization*
+- **Bài báo:** [OpenReview](https://openreview.net/forum?id=6Tm1mposlrM)
+
+| MSSV | Họ và tên |
+|---|---|
+| 26848099 | Đặng Anh Khoa |
+| 26848113 | Nguyễn Khánh Linh |
+| 26848200 | Huỳnh Quốc Thái |
+| 26848096 | Phạm Duy Khánh |
+
 ## Mục tiêu
 
 So sánh SGD và SAM-SGD trên CIFAR-10 trong cùng điều kiện về mô hình, dữ liệu và quy trình huấn luyện. Thực nghiệm chính sử dụng nhiều seed, đồng thời ghi nhận accuracy, generalization gap, thời gian chạy và bộ nhớ GPU.
