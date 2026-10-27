@@ -1,0 +1,19 @@
+# Jupyter
+.ipynb_checkpoints/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+
+# Datasets and local runtime files
+data/
+
+# Large experiment checkpoints
+results/**/*.pt
+results/**/*.pth
+
+# Operating systems and editors
+.DS_Store
+.idea/
+.vscode/
