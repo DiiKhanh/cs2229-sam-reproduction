@@ -1,4 +1,4 @@
-"""Execute the canonical notebook's code cells locally against a simulated Google Drive.
+"""Execute a pipeline notebook's code cells locally against a simulated Google Drive.
 
 The notebook targets Google Colab, so this runner swaps the Colab-only pieces:
 the Drive mount becomes a plain directory, `/content/data` moves under
@@ -8,6 +8,8 @@ and cannot pickle functions defined in an exec'd namespace.
 Usage:
     python tools/run_notebook_locally.py notebooks/sam_reproduction_vi.ipynb \
         --drive /tmp/fake-drive --runtime /tmp/runtime [--plan smoke] [--seed 0]
+
+The same runner executes notebooks/sam_stage2_reproduction_vi.ipynb (plans smoke/rho).
 
 `--drive` must contain `MyDrive/CS2229-SAM/data/cifar-10-python.tar.gz`.
 The script prints NOTEBOOK_OK when every code cell has executed.
@@ -58,7 +60,7 @@ def main():
     parser.add_argument("notebook")
     parser.add_argument("--drive", required=True)
     parser.add_argument("--runtime", required=True)
-    parser.add_argument("--plan", default="smoke", choices=("smoke", "core"))
+    parser.add_argument("--plan", default="smoke", choices=("smoke", "core", "rho"))
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--workers", type=int, default=0)
     args = parser.parse_args()
