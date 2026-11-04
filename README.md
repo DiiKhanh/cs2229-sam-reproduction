@@ -24,7 +24,7 @@ So sánh SGD và SAM-SGD trên CIFAR-10 trong cùng điều kiện về mô hìn
 
 - Ngày 04/11/2026: nhóm chốt WRN-28-10 cho core matrix.
 - Notebook `sam_reproduction_vi_v5` sẵn sàng cho tám core runs trên bốn branch `run/core-s0` đến `run/core-s3`.
-- Chưa có core run nào hoàn tất.
+- Ngày 04/11/2026: B hoàn tất `core_sgd_s1` và `core_sam_s1`, bắt đầu `rho` ablation trên branch `run/rho-s1` bằng notebook stage 2 `sam_stage2_reproduction_vi_v1`.
 
 Kế hoạch chi tiết, phân công và tiêu chí hoàn thành nằm trong [`docs/2026-10-23-sam-experiment-work-plan-vi.md`](docs/2026-10-23-sam-experiment-work-plan-vi.md).
 
@@ -40,6 +40,20 @@ Kế hoạch chi tiết, phân công và tiêu chí hoàn thành nằm trong [`d
 | `run/core-s3` | D | 3 | `core_sgd_s3`, `core_sam_s3` |
 
 Mỗi branch dùng chung recipe: WRN-28-10, CIFAR-10 với 45.000 ảnh train và 5.000 ảnh validation, 200 epochs, batch size 128, learning rate 0.1 với cosine schedule, momentum 0.9, weight decay 5e-4 và `rho = 0.05` cho SAM.
+
+## Stage 2: `rho` ablation
+
+Stage 2 dùng notebook riêng `notebooks/sam_stage2_reproduction_vi.ipynb`, nhân bản từ notebook core `sam_reproduction_vi_v5`, để không phải đổi `NOTEBOOK_VERSION` của notebook core khi các core run khác còn đang chạy. Data, model, training loop và artifact giữ nguyên; mỗi lần **Run all** chạy SAM với `rho = 0.01`, `0.10` rồi `0.20`. Điểm `rho = 0.05` lấy từ `core_sam_s1`.
+
+| Branch | Thành viên | `SEED` | Run IDs |
+|---|---|---:|---|
+| `run/rho-s1` | B | 1 | `rho_001_s1`, `rho_010_s1`, `rho_020_s1` |
+
+Cách chạy và resume giống core run (các mục bên dưới), chỉ khác:
+
+- Tải `notebooks/sam_stage2_reproduction_vi.ipynb` từ branch `run/rho-s1`.
+- Output của cell cấu hình phải có `run_plan=rho`, `seed=1`, `runs=['rho_001_s1', 'rho_010_s1', 'rho_020_s1']` và `notebook_version=sam_stage2_reproduction_vi_v1`.
+- Mỗi run tốn thời gian GPU và dung lượng Drive tương đương `core_sam_s1`; ba run cần thêm khoảng 3,4 GB trên Drive.
 
 ## Chuẩn bị Google Drive
 
@@ -119,7 +133,8 @@ Checkpoint không được commit vào Git. Cách gom kết quả để tổng h
 │   ├── 2026-10-12-sam-paper-summary-vi.md
 │   └── 2026-10-23-sam-experiment-work-plan-vi.md
 ├── notebooks/
-│   └── sam_reproduction_vi.ipynb
+│   ├── sam_reproduction_vi.ipynb          # core matrix
+│   └── sam_stage2_reproduction_vi.ipynb   # stage 2: rho ablation
 └── tools/
     └── run_notebook_locally.py  # chạy thử notebook trên máy local với Drive giả lập
 ```

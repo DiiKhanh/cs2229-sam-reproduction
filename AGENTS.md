@@ -9,7 +9,8 @@ A four-member CS2229 course project that reproduces part of *Sharpness-Aware Min
 Authoritative sources, in order:
 
 1. `docs/2026-10-23-sam-experiment-work-plan-vi.md` - scope, run matrix, member roles, artifact contract, schedule.
-2. `notebooks/sam_reproduction_vi.ipynb` - the single canonical training pipeline. There is no separate Python package.
+2. `notebooks/sam_reproduction_vi.ipynb` - the canonical training pipeline for the core matrix. There is no separate Python package.
+   `notebooks/sam_stage2_reproduction_vi.ipynb` is its stage-2 copy for the rho ablation. Its training code must stay identical to the core notebook version named in `BASE_NOTEBOOK_VERSION`; apply any training-code change to both notebooks and bump both versions.
 3. `README.md` - team-facing Colab run and resume guide.
 
 ## Execution model
@@ -25,7 +26,7 @@ Authoritative sources, in order:
 - `run/core-s<k>` (k = 0..3) differs from `main` only in the branch section of the notebook's config cell: `RUN_PLAN = "core"` and `SEED = k`. Keep that diff to those two lines so `main` can be merged in cleanly.
 - Make pipeline, recipe and documentation changes on `main`, then merge `main` into the run branches.
 - Do not merge a `NOTEBOOK_VERSION` change into a run branch while that branch's runs are in progress: resume compares the full config, including the version, and refuses to continue. Coordinate with the team first.
-- Extension runs (rho ablation, SGD 400 epochs, label noise) get their own branches after the core matrix is complete.
+- Extension runs (rho ablation, SGD 400 epochs, label noise) get their own branches. `run/rho-s1` differs from `main` only in the branch section of the stage-2 notebook's config cell: `RUN_PLAN = "rho"` and `SEED = 1`.
 
 ## Changing the notebook
 
@@ -45,7 +46,7 @@ python tools/run_notebook_locally.py notebooks/sam_reproduction_vi.ipynb \
     --drive /tmp/sam-drive --runtime /tmp/sam-runtime --plan smoke --seed 0
 ```
 
-It must print `NOTEBOOK_OK`. For changes touching checkpointing or resume, also kill the process mid-run, rerun the same command, and confirm `history.csv` and `summary.json` match an uninterrupted run with the same seed. The smoke plan uses WRN-16-1 on a 1,024-image subset; it validates the pipeline, not WRN-28-10 runtime or memory. State plainly when a change has not been verified on a Colab GPU.
+It must print `NOTEBOOK_OK`. The same command verifies `notebooks/sam_stage2_reproduction_vi.ipynb` with `--plan smoke`. For changes touching checkpointing or resume, also kill the process mid-run, rerun the same command, and confirm `history.csv` and `summary.json` match an uninterrupted run with the same seed. The smoke plan uses WRN-16-1 on a 1,024-image subset; it validates the pipeline, not WRN-28-10 runtime or memory. State plainly when a change has not been verified on a Colab GPU.
 
 ## Research integrity
 

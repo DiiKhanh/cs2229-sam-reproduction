@@ -14,7 +14,7 @@
 - **Môn học:** CS2229
 - **Quy mô nhóm:** 4 thành viên
 - **Hạn báo cáo:** 30/11/2026
-- **Trạng thái thực nghiệm:** Ngày 04/11 nhóm chốt WRN-28-10 cho core matrix. Notebook `sam_reproduction_vi_v5` đã sẵn sàng cho tám core runs trên bốn branch; chưa có core run nào hoàn tất
+- **Trạng thái thực nghiệm:** Ngày 04/11 nhóm chốt WRN-28-10 cho core matrix. Notebook `sam_reproduction_vi_v5` đã sẵn sàng cho tám core runs trên bốn branch. Cùng ngày, B hoàn tất `core_sgd_s1` và `core_sam_s1`, rồi bắt đầu `rho` ablation trên `run/rho-s1` bằng notebook stage 2 `sam_stage2_reproduction_vi_v1`
 - **Bài báo:** Foret, Kleiner, Mobahi, và Neyshabur, *Sharpness-Aware Minimization for Efficiently Improving Generalization*, ICLR 2021
 - **Paper:** [OpenReview](https://openreview.net/forum?id=6Tm1mposlrM) | [arXiv](https://arxiv.org/abs/2010.01412)
 - **Code chính thức:** [google-research/sam](https://github.com/google-research/sam)
@@ -125,17 +125,26 @@ Mỗi branch chỉ khác `main` ở cell cấu hình của notebook. **Run all**
 | `run/core-s2` | C | `"core"` | 2 | `core_sgd_s2`, `core_sam_s2` |
 | `run/core-s3` | D | `"core"` | 3 | `core_sgd_s3`, `core_sam_s3` |
 
-Extension runs sẽ có branch riêng sau khi core matrix hoàn tất.
+Extension runs có branch riêng. Ngày 04/11, B đã xong cặp core run và còn quota GPU nên bắt đầu `rho` ablation sớm, không chờ đủ core matrix:
+
+| Branch | Thành viên | Notebook | `RUN_PLAN` | `SEED` | Run IDs |
+|---|---|---|---|---:|---|
+| `run/rho-s1` | B | `sam_stage2_reproduction_vi.ipynb` | `"rho"` | 1 | `rho_001_s1`, `rho_010_s1`, `rho_020_s1` |
+
+`run/rho-s1` chỉ khác `main` ở cell cấu hình của notebook stage 2. Notebook stage 2 là file riêng để các core run đang chạy không bị ảnh hưởng bởi thay đổi `NOTEBOOK_VERSION` của notebook core.
 
 Các extension một seed chỉ được trình bày là kết quả khám phá. Không dùng chúng để khẳng định phương pháp tốt hơn một cách ổn định. Label-noise runs dùng chung seed 2 ở cả 0%, 40% và 80% để tránh trộn ảnh hưởng của noise rate với khác biệt initialization.
 
 ## 5. Canonical notebook
 
-Nhóm chỉ duy trì một notebook nguồn:
+Nhóm duy trì một notebook nguồn cho core matrix và một bản nhân bản cho stage 2:
 
 ```text
-sam_reproduction_vi.ipynb
+sam_reproduction_vi.ipynb           # core matrix, sam_reproduction_vi_v5
+sam_stage2_reproduction_vi.ipynb    # rho ablation, sam_stage2_reproduction_vi_v1
 ```
+
+Notebook stage 2 giữ nguyên data, model, training loop, SAM, checkpoint và artifact của `sam_reproduction_vi_v5` (ghi trong field `base_notebook_version`); chỉ thay cặp SGD/SAM bằng một dãy `RHO_VALUES = (0.01, 0.10, 0.20)` cho SAM. Với cùng seed và `rho = 0.05`, smoke test của hai notebook cho `history.csv` trùng nhau. Mọi sửa đổi training code phải áp dụng cho cả hai notebook và tăng version của cả hai.
 
 Mỗi thành viên dùng cùng notebook và cùng phiên bản code. Chỉ phần đầu cell cấu hình khác nhau giữa các branch:
 
@@ -238,7 +247,7 @@ Trạng thái ngày 04/11: nhóm chốt WRN-28-10 và bỏ pilot riêng; thời 
 
 ### Giai đoạn 2 - Chạy core matrix, 01-08/11
 
-Mỗi thành viên chạy cặp SGD và SAM với seed được giao. Hoàn thành đủ tám core runs trước khi bắt đầu bất kỳ extension nào.
+Mỗi thành viên chạy cặp SGD và SAM với seed được giao. Hoàn thành đủ tám core runs trước khi bắt đầu bất kỳ extension nào. Ngoại lệ: B bắt đầu `rho` ablation ngày 04/11 sau khi xong `core_sgd_s1` và `core_sam_s1` (Mục 4.3).
 
 Review chéo artifact:
 
