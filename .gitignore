@@ -12,6 +12,7 @@ data/
 # Large experiment checkpoints
 results/**/*.pt
 results/**/*.pth
+results/**/*.backup
 
 # Operating systems and editors
 .DS_Store
