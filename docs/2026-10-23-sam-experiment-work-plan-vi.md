@@ -5,14 +5,16 @@
 - Origin Skill: experiment-agent
 - Origin Mode: plan
 - Origin Date: 2026-10-23
+- Last Updated: 2026-11-04
 - Verification Status: UNVERIFIED
-- Version Label: code_plan_v1
+- Version Label: code_plan_v3
 
 ## 1. Thông tin chung
 
 - **Môn học:** CS2229
 - **Quy mô nhóm:** 4 thành viên
 - **Hạn báo cáo:** 30/11/2026
+- **Trạng thái thực nghiệm:** Ngày 04/11 nhóm chốt WRN-28-10 cho core matrix. Notebook `sam_reproduction_vi_v5` đã sẵn sàng cho tám core runs trên bốn branch; chưa có core run nào hoàn tất
 - **Bài báo:** Foret, Kleiner, Mobahi, và Neyshabur, *Sharpness-Aware Minimization for Efficiently Improving Generalization*, ICLR 2021
 - **Paper:** [OpenReview](https://openreview.net/forum?id=6Tm1mposlrM) | [arXiv](https://arxiv.org/abs/2010.01412)
 - **Code chính thức:** [google-research/sam](https://github.com/google-research/sam)
@@ -40,8 +42,8 @@ Kết quả tốt cần có:
 | Thành phần | Thiết lập |
 |---|---|
 | Dataset | CIFAR-10 |
-| Model ưu tiên | WideResNet-28-10 |
-| Fallback nếu thiếu GPU | WideResNet-16-4 hoặc ResNet-18; phải ghi rõ đây là reduced reproduction |
+| Model | WideResNet-28-10, đã chốt ngày 04/11 |
+| Fallback | WideResNet-16-4, chỉ dùng nếu cả nhóm quyết định lại; phải ghi rõ đây là reduced reproduction |
 | Augmentation | Horizontal flip, padding 4 pixels và random crop |
 | Methods | SGD và SAM-SGD |
 | Epochs | 200 |
@@ -57,9 +59,9 @@ WideResNet-28-10, CIFAR-10, basic augmentation và 200 epochs bám sát một co
 Ưu tiên theo thứ tự:
 
 1. `rho` ablation trên CIFAR-10.
-2. Label noise 40%.
-3. Label noise 80%.
-4. SGD 400 epochs để có thêm một đối chứng gần equal-gradient-computation với SAM 200 epochs.
+2. SGD 400 epochs để có một đối chứng gần equal-gradient-computation với SAM 200 epochs.
+3. Label noise 40%.
+4. Label noise 80%.
 5. CIFAR-100 chỉ thực hiện khi toàn bộ thí nghiệm trên đã hoàn tất và artifact đã được kiểm tra.
 
 Không chia mỗi thành viên một dataset trong thí nghiệm chính. Nếu mỗi dataset chỉ có một số cấu hình riêng, kết quả khó ghép thành một so sánh thống nhất.
@@ -70,12 +72,28 @@ Không chia mỗi thành viên một dataset trong thí nghiệm chính. Nếu m
 
 | Thành viên | Core runs bắt buộc | Extension phụ trách | Trách nhiệm bổ sung |
 |---|---|---|---|
-| A - [Tên] | SGD seed 0; SAM seed 0 | SGD 400 epochs seed 0 nếu còn tài nguyên | Duy trì canonical notebook, khóa phiên bản code và kiểm tra artifact |
-| B - [Tên] | SGD seed 1; SAM seed 1 | SAM với `rho = 0.01, 0.1, 0.2`, seed 1 | Tổng hợp đồ thị `rho` ablation |
-| C - [Tên] | SGD seed 2; SAM seed 2 | SGD và SAM với 40% label noise, seed 2 | Tổng hợp đồ thị learning curves |
-| D - [Tên] | SGD seed 3; SAM seed 3 | SGD và SAM với 80% label noise, seed 3 | Tổng hợp bảng accuracy, thời gian và bộ nhớ |
+| A - [Tên] | SGD seed 0; SAM seed 0 | SGD 400 epochs seed 0 nếu còn tài nguyên | Benchmark cấu hình thật, duy trì canonical notebook, khóa phiên bản và kiểm tra artifact |
+| B - [Tên] | SGD seed 1; SAM seed 1 | SAM với `rho = 0.01, 0.1, 0.2`, seed 1 | Kiểm tra implementation SAM và tổng hợp đồ thị `rho` ablation |
+| C - [Tên] | SGD seed 2; SAM seed 2 | SGD và SAM với 40% label noise, seed 2 | Tổng hợp learning curves, mean, standard deviation và paired differences |
+| D - [Tên] | SGD seed 3; SAM seed 3 | SGD và SAM với 80% label noise, seed 2 | Tổng hợp bảng compute, chuẩn bị checkpoint và notebook demo |
 
-### 4.1 Run matrix
+### 4.1 Chuẩn bị trước core runs
+
+Smoke test v4 trên Colab đã xác nhận cả SGD và SAM chạy đủ 5 epochs, sinh đủ artifact và load checkpoint để inference thành công. Smoke test dùng WRN-16-1 và tập con 1.024 ảnh nên không được dùng để ước lượng thời gian hoặc bộ nhớ của WRN-28-10.
+
+Ngày 04/11, nhóm chốt chạy core matrix bằng WRN-28-10 mà không chạy pilot 2 epochs riêng. Log của mỗi core run in thời gian từng epoch và thời gian còn lại ước tính, nên vài epoch đầu đóng vai trò pilot.
+
+- [x] Entry point `run_planned_runs()` chạy cặp SGD/SAM theo `RUN_PLAN`; không còn `run_smoke_pair()`.
+- [x] Dataset đọc từ `MyDrive/CS2229-SAM/data/cifar-10-python.tar.gz`, kiểm tra MD5 trước khi train.
+- [x] Checkpoint được ghi đè tại chỗ kèm bản `.backup` để không dồn file cũ vào Google Drive Trash.
+- [x] Cell dự đoán cho demo chạy tự động sau các run.
+- [x] Tăng `NOTEBOOK_VERSION` lên `sam_reproduction_vi_v5`; canonical notebook nằm trên branch `main` của repository nhóm.
+- [ ] Ghi lại thời gian mỗi epoch, peak GPU memory và GPU được cấp từ vài epoch đầu của `core_sgd_s0` và `core_sam_s0`.
+- [ ] Nếu ETA cho thấy không thể hoàn tất trước 08/11, cả nhóm quyết định lại lịch hoặc model trước khi tiếp tục.
+
+Mọi thay đổi ảnh hưởng training phải tăng version; các run tạo bởi version cũ phải được đánh dấu và đánh giá lại tính hợp lệ.
+
+### 4.2 Run matrix
 
 | Run ID | Người chạy | Method | Seed | Rho | Label noise | Epochs | Mức ưu tiên |
 |---|---|---|---:|---:|---:|---:|---|
@@ -90,34 +108,44 @@ Không chia mỗi thành viên một dataset trong thí nghiệm chính. Nếu m
 | `rho_001_s1` | B | SAM | 1 | 0.01 | 0% | 200 | Mở rộng 1 |
 | `rho_010_s1` | B | SAM | 1 | 0.10 | 0% | 200 | Mở rộng 1 |
 | `rho_020_s1` | B | SAM | 1 | 0.20 | 0% | 200 | Mở rộng 1 |
-| `noise40_sgd_s2` | C | SGD | 2 | 0 | 40% | 200 | Mở rộng 2 |
-| `noise40_sam_s2` | C | SAM | 2 | 0.05 | 40% | 200 | Mở rộng 2 |
-| `noise80_sgd_s3` | D | SGD | 3 | 0 | 80% | 200 | Mở rộng 3 |
-| `noise80_sam_s3` | D | SAM | 3 | 0.05 | 80% | 200 | Mở rộng 3 |
-| `compute_sgd400_s0` | A | SGD | 0 | 0 | 0% | 400 | Mở rộng 4 |
+| `compute_sgd400_s0` | A | SGD | 0 | 0 | 0% | 400 | Mở rộng 2 |
+| `noise40_sgd_s2` | C | SGD | 2 | 0 | 40% | 200 | Mở rộng 3 |
+| `noise40_sam_s2` | C | SAM | 2 | 0.05 | 40% | 200 | Mở rộng 3 |
+| `noise80_sgd_s2` | D | SGD | 2 | 0 | 80% | 200 | Mở rộng 4 |
+| `noise80_sam_s2` | D | SAM | 2 | 0.05 | 80% | 200 | Mở rộng 4 |
 
-Các extension một seed chỉ được trình bày là kết quả khám phá. Không dùng chúng để khẳng định phương pháp tốt hơn một cách ổn định.
+### 4.3 Branch cho core runs
+
+Mỗi branch chỉ khác `main` ở cell cấu hình của notebook. **Run all** trên một branch chạy SGD rồi SAM của seed tương ứng.
+
+| Branch | Thành viên | `RUN_PLAN` | `SEED` | Run IDs |
+|---|---|---|---:|---|
+| `run/core-s0` | A | `"core"` | 0 | `core_sgd_s0`, `core_sam_s0` |
+| `run/core-s1` | B | `"core"` | 1 | `core_sgd_s1`, `core_sam_s1` |
+| `run/core-s2` | C | `"core"` | 2 | `core_sgd_s2`, `core_sam_s2` |
+| `run/core-s3` | D | `"core"` | 3 | `core_sgd_s3`, `core_sam_s3` |
+
+Extension runs sẽ có branch riêng sau khi core matrix hoàn tất.
+
+Các extension một seed chỉ được trình bày là kết quả khám phá. Không dùng chúng để khẳng định phương pháp tốt hơn một cách ổn định. Label-noise runs dùng chung seed 2 ở cả 0%, 40% và 80% để tránh trộn ảnh hưởng của noise rate với khác biệt initialization.
 
 ## 5. Canonical notebook
 
-Nhóm chỉ duy trì một notebook nguồn, ví dụ:
+Nhóm chỉ duy trì một notebook nguồn:
 
 ```text
-sam_reproduction.ipynb
+sam_reproduction_vi.ipynb
 ```
 
-Mỗi thành viên dùng cùng notebook và cùng phiên bản code. Chỉ thay đổi cell cấu hình:
+Mỗi thành viên dùng cùng notebook và cùng phiên bản code. Chỉ phần đầu cell cấu hình khác nhau giữa các branch:
 
 ```python
-METHOD = "sam"          # "sgd" hoặc "sam"
-DATASET = "cifar10"
-MODEL = "wrn28x10"
-SEED = 0
-RHO = 0.05
-LABEL_NOISE = 0.0
-EPOCHS = 200
-RUN_ID = "core_sam_s0"
+RUN_PLAN = "core"   # "smoke" trên main
+SEED = 0            # seed của branch
+RESUME_IF_EXISTS = True
 ```
+
+Recipe dùng chung (`MODEL = "wrn28x10"`, `RHO = 0.05`, `LABEL_NOISE = 0.0`, `EPOCHS = 200` và các hyperparameter) giống nhau trên mọi branch.
 
 Notebook phải có các phần:
 
@@ -132,6 +160,8 @@ Notebook phải có các phần:
 9. Xuất artifact chuẩn.
 10. Demo load checkpoint và dự đoán một batch ảnh.
 
+Entry point duy nhất là `run_planned_runs()`: với mỗi method, bỏ qua run đã hoàn tất, resume run dở hoặc bắt đầu run mới. Vì vậy **Run all** dùng được cho cả lần chạy đầu và mọi lần resume.
+
 ## 6. Chuẩn đầu ra của mỗi run
 
 Mỗi run phải tạo đúng một thư mục:
@@ -142,9 +172,14 @@ results/<run_id>/
   history.csv
   summary.json
   best_checkpoint.pt
+  last_checkpoint.pt
   learning_curves.png
   environment.txt
+  best_checkpoint.pt.backup
+  last_checkpoint.pt.backup
 ```
+
+Hai file `.backup` là bản sao an toàn khi phiên Colab ngắt lúc đang ghi checkpoint. `history.csv` có thêm cột `gpu_name` vì một run có thể được resume trên nhiều loại GPU.
 
 ### 6.1 Nội dung tối thiểu của `summary.json`
 
@@ -177,59 +212,74 @@ results/<run_id>/
 ## 7. Quy trình thực hiện
 
 ```mermaid
-flowchart LR
-    A[Canonical notebook] --> B[Five-epoch smoke test]
-    B --> C[Review logs and artifacts]
-    C --> D[Freeze code and configs]
-    D --> E1[Member A: seed 0]
-    D --> E2[Member B: seed 1]
-    D --> E3[Member C: seed 2]
-    D --> E4[Member D: seed 3]
-    E1 --> F[Aggregate core results]
-    E2 --> F
-    E3 --> F
-    E4 --> F
-    F --> G[Rho and label-noise extensions]
-    G --> H[Final plots, slides, and demo]
+flowchart TB
+    A[Smoke test đã đạt] --> B[Pilot cấu hình thật: SGD và SAM]
+    B --> C{WRN-28-10 khả thi?}
+    C -- Có --> D[Khóa model, notebook và config]
+    C -- Không --> E[Chuyển cả nhóm sang WRN-16-4]
+    E --> D
+    D --> F1[A: core seed 0]
+    D --> F2[B: core seed 1]
+    D --> F3[C: core seed 2]
+    D --> F4[D: core seed 3]
+    F1 --> G[Tổng hợp 8 core runs]
+    F2 --> G
+    F3 --> G
+    F4 --> G
+    G --> H[Rho, compute và label-noise extensions]
+    H --> I[Khóa kết quả, slides và demo]
 ```
 
-### Giai đoạn 1 - Hoàn thiện pipeline
+### Giai đoạn 1 - Pilot cấu hình thật và khóa pipeline, 29-31/10
 
-Thành viên A chuẩn bị notebook. Các thành viên còn lại review config, output path và khả năng chạy lại.
+Thành viên A thực hiện các task trong Mục 4.1. B, C và D review cell cấu hình, output path, resume logic và artifact schema. Nhóm chỉ chia full runs sau khi đã chốt một model duy nhất và một notebook version duy nhất.
 
-### Giai đoạn 2 - Smoke test
+Trạng thái ngày 04/11: nhóm chốt WRN-28-10 và bỏ pilot riêng; thời gian thực tế được đo từ các epoch đầu của core runs.
 
-Cả bốn thành viên chạy cấu hình được giao trong 5 epochs. Chỉ được chuyển sang full run khi:
+### Giai đoạn 2 - Chạy core matrix, 01-08/11
 
-- Notebook chạy từ đầu đến cuối mà không sửa thủ công giữa chừng.
-- SGD và SAM dùng cùng data split và augmentation.
-- Các file artifact được tạo đúng schema.
-- Checkpoint load lại được.
-- Training loss có xu hướng giảm.
-- GPU memory không vượt giới hạn.
-- Thời gian 5 epochs đã được dùng để ước lượng tổng thời gian 200 epochs.
+Mỗi thành viên chạy cặp SGD và SAM với seed được giao. Hoàn thành đủ tám core runs trước khi bắt đầu bất kỳ extension nào.
 
-Nếu WideResNet-28-10 không khả thi trên tài nguyên hiện có, cả nhóm cùng chuyển sang một model fallback. Không để mỗi thành viên tự chọn model khác nhau.
+Review chéo artifact:
 
-### Giai đoạn 3 - Đóng băng pipeline
+- A kiểm tra runs của C; C kiểm tra runs của A.
+- B kiểm tra runs của D; D kiểm tra runs của B.
+- Người review đối chiếu `config.json`, số dòng `history.csv`, schema `summary.json`, notebook version và khả năng load checkpoint.
 
-Ghi lại phiên bản notebook hoặc commit. Sau thời điểm này, mọi sửa đổi ảnh hưởng training phải tạo version mới và các run cũ phải được đánh dấu rõ.
+Nếu Colab chỉ bị ngắt phiên, mở lại cùng notebook và **Run all** để resume. Nếu phát hiện bug ảnh hưởng training hoặc evaluation, tăng notebook version và chạy lại toàn bộ runs bị ảnh hưởng; không trộn artifact giữa hai version.
 
-### Giai đoạn 4 - Chạy core matrix
+### Giai đoạn 3 - Tổng hợp core results, 09-10/11
 
-Mỗi thành viên chạy cặp SGD và SAM với seed được giao. Ưu tiên hoàn thành đủ tám core runs trước khi chạy extension.
+Thành viên C chủ trì tổng hợp, cả nhóm cùng duyệt:
 
-### Giai đoạn 5 - Tổng hợp core results
+- Mean và sample standard deviation trên bốn seed cho SGD và SAM.
+- Chênh lệch test accuracy `SAM - SGD` theo từng seed.
+- Paired plot nối kết quả SGD và SAM dùng cùng seed.
+- Mean time/epoch, total time, peak GPU memory và tỷ lệ overhead của SAM.
+- Run bất thường và giải thích dựa trên config, log hoặc environment.
 
-Tính mean và standard deviation trên bốn seed cho SGD và SAM. Kiểm tra run bất thường trước khi mở rộng thí nghiệm.
+Với bốn seed, không dùng p-value để tuyên bố có ý nghĩa thống kê. Báo cáo đầy đủ từng seed, mean, dispersion và phạm vi kết luận.
 
-### Giai đoạn 6 - Chạy extension
+### Giai đoạn 4 - Chạy extension, 11-17/11
 
-Chạy `rho` ablation, label noise và SGD 400 epochs theo thứ tự ưu tiên trong Mục 3.2.
+Chạy theo thứ tự:
 
-### Giai đoạn 7 - Khóa kết quả
+1. B chạy ba cấu hình `rho` còn thiếu và dùng `core_sam_s1` làm điểm `rho=0.05`.
+2. A chạy SGD 400 epochs để so sánh gần equal-gradient-computation với SAM 200 epochs.
+3. C chạy cặp SGD/SAM với 40% label noise, seed 2.
+4. D chạy cặp SGD/SAM với 80% label noise, seed 2.
 
-Tạo bảng tổng hợp cuối, xuất hình dùng cho slides và chạy lại notebook demo từ đầu.
+Nếu thiếu tài nguyên, bỏ CIFAR-100 trước, sau đó bỏ label noise 80%. Không hy sinh core matrix hoặc tính nhất quán của pipeline để hoàn thành thêm extension.
+
+### Giai đoạn 5 - Báo cáo, slides và demo, 18-23/11
+
+Khóa bảng kết quả, xuất hình có thể truy ngược về artifact và chuẩn bị demo dùng checkpoint full run. Mọi con số trên slides phải có run ID nguồn.
+
+### Giai đoạn 6 - Rehearsal và buffer, 24-29/11
+
+- 24-27/11: chạy ít nhất hai buổi rehearsal, đo thời lượng và kiểm tra phần chuyển giao giữa các thành viên.
+- 28-29/11: sửa lỗi cuối, cache dataset, dependency và checkpoint; đóng gói slides, source code, demo và link Drive.
+- 30/11: báo cáo bằng artifact đã khóa, không chạy full training trực tiếp trong buổi trình bày.
 
 ## 8. Nội dung kết quả cần đưa lên slides
 
@@ -243,10 +293,21 @@ Tạo bảng tổng hợp cuối, xuất hình dùng cho slides và chạy lại
 ### 8.2 Hình bắt buộc
 
 1. Learning curves của một cặp SGD/SAM dùng cùng seed.
-2. Test accuracy trung bình của SGD và SAM trên bốn seed, kèm error bar.
-3. Test accuracy theo `rho`.
-4. Test accuracy của SGD và SAM tại 0%, 40% và 80% label noise.
-5. Biểu đồ thời gian training hoặc accuracy theo GPU-hour nếu dữ liệu đủ.
+2. Paired plot SGD và SAM trên bốn seed, kèm mean và error bar.
+3. Test accuracy theo `rho`; SGD là đường tham chiếu, không phải một điểm SAM `rho=0`.
+4. Test accuracy của SGD và SAM tại 0%, 40% và 80% label noise, cùng seed 2.
+5. Biểu đồ thời gian training hoặc accuracy theo GPU-hour.
+
+### 8.3 Phân công nội dung thuyết trình
+
+| Thành viên | Phần trình bày chính |
+|---|---|
+| A | Động lực, câu hỏi tái lập, phạm vi so với paper và pipeline |
+| B | Objective SAM, hai gradient passes, BatchNorm và `rho` ablation |
+| C | Thiết kế fair comparison, thống kê bốn seed và core results |
+| D | Compute cost, label-noise results, hạn chế, kết luận và demo |
+
+Mỗi thành viên phải hiểu toàn bộ pipeline và trả lời được cấu hình mình trực tiếp chạy, không chỉ đọc phần slide được giao.
 
 ## 9. Kế hoạch demo
 
@@ -259,7 +320,7 @@ Demo dùng chính canonical notebook:
 5. Hiển thị learning curve và dự đoán trên một batch CIFAR-10.
 6. Chuyển `METHOD` giữa `sgd` và `sam` mà không sửa training loop.
 
-Không phụ thuộc vào việc chạy đủ 200 epochs trong lúc thuyết trình. Full-run artifacts phải được chuẩn bị trước và demo chỉ chứng minh pipeline thực sự hoạt động.
+Không phụ thuộc vào mạng để tải dataset, dependency hoặc checkpoint trong buổi thuyết trình. Không chạy đủ 200 epochs trực tiếp; full-run artifacts phải được chuẩn bị trước và demo chỉ chứng minh pipeline thực sự hoạt động.
 
 ## 10. Tiêu chí hoàn thành
 
@@ -267,7 +328,7 @@ Không phụ thuộc vào việc chạy đủ 200 epochs trong lúc thuyết tr�
 
 - Một notebook chạy được end-to-end.
 - Ít nhất một run SGD và một run SAM trên CIFAR-10.
-- Có checkpoint, learning curve và test accuracy.
+- Có đủ bảy artifact cho mỗi run, learning curve và test accuracy.
 - Demo load checkpoint và inference thành công.
 
 ### Mức tốt
@@ -285,33 +346,52 @@ Không phụ thuộc vào việc chạy đủ 200 epochs trong lúc thuyết tr�
 - Toàn bộ kết quả truy ngược được về config, log và checkpoint.
 - Notebook demo chạy lại ổn định trên môi trường trình bày.
 
+### Definition of done cho một full run
+
+- Có đủ `config.json`, `history.csv`, `summary.json`, `best_checkpoint.pt`, `last_checkpoint.pt`, `learning_curves.png` và `environment.txt`.
+- `history.csv` có đúng 200 dòng cho core run hoặc 400 dòng cho `compute_sgd400_s0`.
+- Method, model, seed, `rho`, label-noise rate và epochs khớp run matrix.
+- `best_checkpoint.pt` được chọn bằng validation accuracy, không dùng test set để chọn checkpoint hoặc tune hyperparameter.
+- Checkpoint load được vào model mới và inference trả về 10 logits cho mỗi ảnh.
+- Artifact ghi đúng notebook version, GPU, framework versions và run ID.
+- Một thành viên khác đã review và đánh dấu đạt.
+
 ## 11. Checklist trước khi full run
 
 - [ ] Đã điền tên bốn thành viên và xác nhận phân công.
-- [ ] Đã chốt model dựa trên smoke-test runtime.
-- [ ] Đã chốt validation split và không thay đổi giữa các run.
-- [ ] Đã cố định seed cho data split, initialization và data loader.
-- [ ] Đã kiểm tra SGD và SAM dùng cùng augmentation.
-- [ ] Đã kiểm tra SAM dùng cùng mini-batch cho hai gradient evaluations.
-- [ ] Đã kiểm tra BatchNorm running statistics không bị cập nhật sai ở pass thứ hai.
-- [ ] Đã kiểm tra `rho=0` hoặc chế độ SGD thực sự tắt SAM perturbation.
-- [ ] Đã kiểm tra checkpoint selection chỉ dùng validation metric.
-- [ ] Đã kiểm tra `summary.json` và `history.csv` được tạo đúng.
-- [ ] Đã test load checkpoint và inference.
-- [ ] Đã khóa notebook version trước khi chia full runs.
+Các mục đã đánh dấu được kiểm tra ngày 04/11 bằng đọc code và chạy smoke plan v5 trên CPU với Drive giả lập, gồm cả kịch bản ngắt giữa run SAM rồi resume. Chưa kiểm tra lại trên GPU Colab.
+
+- [ ] Đã điền tên bốn thành viên và xác nhận phân công.
+- [x] Đã chốt một model chung: WRN-28-10, không chạy pilot riêng.
+- [x] Đã có entry point `run_planned_runs()` dùng chung cho run mới và resume.
+- [x] Đã chốt validation split và không thay đổi giữa các run.
+- [x] Đã cố định seed cho data split, initialization và data loader.
+- [x] Đã kiểm tra SGD và SAM dùng cùng augmentation.
+- [x] Đã kiểm tra SAM dùng cùng mini-batch cho hai gradient evaluations.
+- [x] Đã kiểm tra BatchNorm running statistics không bị cập nhật sai ở pass thứ hai.
+- [x] Đã kiểm tra chế độ SGD không dùng SAM perturbation.
+- [x] Đã kiểm tra checkpoint selection chỉ dùng validation metric.
+- [x] Đã kiểm tra `summary.json` và `history.csv` được tạo đúng.
+- [x] Đã test load checkpoint và inference.
+- [x] Đã chạy cell hiển thị dự đoán cho demo ít nhất một lần.
+- [x] Đã khóa notebook version `sam_reproduction_vi_v5` trên branch `main`.
+- [ ] Mỗi thành viên đã upload `cifar-10-python.tar.gz` vào `MyDrive/CS2229-SAM/data/`.
+- [ ] Mỗi thành viên đã xác nhận đang dùng notebook của đúng branch.
 
 ## 12. Rủi ro và phương án xử lý
 
 | Rủi ro | Dấu hiệu | Xử lý |
 |---|---|---|
-| Không đủ GPU cho WRN-28-10 | Smoke test dự báo tổng thời gian vượt ngân sách | Cả nhóm chuyển sang cùng WRN-16-4 hoặc ResNet-18 và ghi là reduced reproduction |
-| Colab ngắt phiên | Run dừng giữa chừng | Lưu checkpoint định kỳ và hỗ trợ resume từ epoch gần nhất |
+| Không đủ GPU cho WRN-28-10 | OOM hoặc ETA trong log vượt lịch 08/11 | Báo nhóm ngay; cả nhóm quyết định dời lịch hoặc cùng chuyển sang WRN-16-4 và ghi là reduced reproduction |
+| Colab ngắt phiên hoặc hết quota GPU | Run dừng giữa chừng | Checkpoint ghi lên Drive sau mỗi epoch; mở lại cùng notebook và Run all để resume |
+| Drive đầy | Lỗi ghi checkpoint | Checkpoint được ghi đè tại chỗ, không tạo file rác trong Trash; không tự xóa checkpoint, kiểm tra Trash và dung lượng còn trống |
 | Kết quả giữa thành viên không ghép được | Khác model, split hoặc package | Chỉ dùng canonical notebook và frozen config |
+| Artifact đến từ nhiều version | `notebook_version` hoặc checksum khác nhau | Không tổng hợp trực tiếp; xác định runs bị ảnh hưởng và chạy lại bằng version đã khóa |
 | SAM không tốt hơn SGD | Accuracy chênh lệch nhỏ hoặc ngược chiều | Báo cáo trung thực toàn bộ seed, kiểm tra pipeline và giới hạn kết luận trong setting đã chạy |
 | Extension chưa hoàn thành | Core runs còn thiếu | Dừng extension và ưu tiên hoàn tất core matrix |
 | Demo lỗi mạng | Không tải được dataset hoặc dependency | Cache dataset, dependency và checkpoint trước buổi báo cáo |
 
 ## 13. Tài liệu tham khảo
 
-1. Foret, P., Kleiner, A., Mobahi, H., & Neyshabur, B. (2021). *Sharpness-Aware Minimization for Efficiently Improving Generalization*. International Conference on Learning Representations. https://openreview.net/forum?id=6Tm1mposlrM
-2. Google Research. *SAM: Sharpness-Aware Minimization for Efficiently Improving Generalization*. https://github.com/google-research/sam
+1. Foret, P., Kleiner, A., Mobahi, H., & Neyshabur, B. (2021). *Sharpness-Aware Minimization for Efficiently Improving Generalization*. International Conference on Learning Representations. [OpenReview](https://openreview.net/forum?id=6Tm1mposlrM)
+2. Google Research. *SAM: Sharpness-Aware Minimization for Efficiently Improving Generalization*. [GitHub](https://github.com/google-research/sam)
