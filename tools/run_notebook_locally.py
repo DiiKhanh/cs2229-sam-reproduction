@@ -9,7 +9,9 @@ Usage:
     python tools/run_notebook_locally.py notebooks/sam_reproduction_vi.ipynb \
         --drive /tmp/fake-drive --runtime /tmp/runtime [--plan smoke] [--seed 0]
 
-The same runner executes notebooks/sam_stage2_reproduction_vi.ipynb (plans smoke/rho).
+The same runner executes the stage-2 notebooks: notebooks/sam_stage2_reproduction_vi.ipynb
+(plans smoke/rho) and notebooks/sam_stage2_extensions_vi.ipynb (plans smoke/sgd400/noise40/noise80).
+Every plan except smoke requires CUDA, so on a CPU-only machine only smoke runs end to end.
 
 `--drive` must contain `MyDrive/CS2229-SAM/data/cifar-10-python.tar.gz`.
 The script prints NOTEBOOK_OK when every code cell has executed.
@@ -60,7 +62,7 @@ def main():
     parser.add_argument("notebook")
     parser.add_argument("--drive", required=True)
     parser.add_argument("--runtime", required=True)
-    parser.add_argument("--plan", default="smoke", choices=("smoke", "core", "rho"))
+    parser.add_argument("--plan", default="smoke", choices=("smoke", "core", "rho", "sgd400", "noise40", "noise80"))
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--workers", type=int, default=0)
     args = parser.parse_args()
