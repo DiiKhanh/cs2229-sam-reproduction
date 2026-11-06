@@ -25,8 +25,9 @@ So sánh SGD và SAM-SGD trên CIFAR-10 trong cùng điều kiện về mô hìn
 - Ngày 04/11/2026: nhóm chốt WRN-28-10 cho core matrix.
 - Notebook `sam_reproduction_vi_v5` sẵn sàng cho tám core runs trên bốn branch `run/core-s0` đến `run/core-s3`.
 - Ngày 04/11/2026: B hoàn tất `core_sgd_s1` và `core_sam_s1`, bắt đầu `rho` ablation trên branch `run/rho-s1` bằng notebook stage 2 `sam_stage2_reproduction_vi_v1`.
+- Ngày 06/11/2026: tám core runs đã chạy xong, chờ review chéo và tổng hợp. `core_sgd_s0` chạy trên T4, `core_sam_s0` chạy trên T4 rồi chuyển sang G4; các seed còn lại chạy trên G4.
 
-Kế hoạch chi tiết, phân công và tiêu chí hoàn thành nằm trong [`docs/2026-10-23-sam-experiment-work-plan-vi.md`](docs/2026-10-23-sam-experiment-work-plan-vi.md).
+Kế hoạch chi tiết, phân công và tiêu chí hoàn thành nằm trong [`docs/2026-10-23-sam-experiment-work-plan-vi.md`](docs/2026-10-23-sam-experiment-work-plan-vi.md). Tổng quan mục tiêu stage 1, stage 2 và các quyết định còn mở nằm trong [`docs/2026-11-06-stage1-stage2-overview-vi.md`](docs/2026-11-06-stage1-stage2-overview-vi.md).
 
 ## Branch và core runs
 
@@ -131,7 +132,9 @@ Checkpoint không được commit vào Git. Cách gom kết quả để tổng h
 ├── CLAUDE.md                  # trỏ tới AGENTS.md
 ├── docs/
 │   ├── 2026-10-12-sam-paper-summary-vi.md
-│   └── 2026-10-23-sam-experiment-work-plan-vi.md
+│   ├── 2026-10-23-sam-experiment-work-plan-vi.md
+│   ├── 2026-11-06-core-s0-mixed-gpu-comparability-vi.md
+│   └── 2026-11-06-stage1-stage2-overview-vi.md
 ├── notebooks/
 │   ├── sam_reproduction_vi.ipynb          # core matrix
 │   └── sam_stage2_reproduction_vi.ipynb   # stage 2: rho ablation
