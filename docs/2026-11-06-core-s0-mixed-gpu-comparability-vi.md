@@ -76,12 +76,29 @@ Có tỷ lệ overhead trên hai loại GPU là một điểm có thể trình b
 
 ## 6. Ảnh hưởng tới stage 2
 
-`compute_sgd400_s0` được dùng để so với `core_sam_s0` ở mức tương đương về số lần tính gradient. Vì `core_sam_s0` chạy trên hai loại GPU, không so hai run này theo wall-clock time hoặc GPU-hour. Hai cách nhóm cần chọn một trước khi tạo notebook stage 2 cho A:
+`compute_sgd400_s0` được dùng để so với SAM 200 epochs ở mức tương đương về số lần tính gradient. Vì `core_sam_s0` chạy trên hai loại GPU, không so hai run này theo wall-clock time hoặc GPU-hour.
 
-1. So theo số lần tính gradient (số epoch quy đổi), không dùng thời gian thực.
-2. Nếu cần đồ thị accuracy theo GPU-hour, chỉ dùng dữ liệu chạy trên G4.
+**Quyết định ngày 06/11/2026:**
 
-## 7. Nguồn đối chiếu
+1. Trục chính là số lần tính gradient. Accuracy của `compute_sgd400_s0` được so với mean ± SD của SAM và SGD 200 epochs trên cả 4 seed, vì accuracy của seed 0 vẫn hợp lệ (Mục 3).
+2. Trục thời gian thực chỉ dùng dữ liệu G4: time/epoch của SGD và SAM lấy từ seed 1-3, và thời gian của `compute_sgd400_s0` nếu A chạy toàn bộ run này trên G4.
+
+Chi tiết nằm trong [`2026-11-06-stage1-stage2-overview-vi.md`](2026-11-06-stage1-stage2-overview-vi.md), Mục 4.1.
+
+## 7. Báo cáo time/epoch của stage 1
+
+Time/epoch của stage 1 vẫn báo cáo được, với điều kiện mỗi con số chỉ lấy từ các epoch chạy trên cùng một loại GPU:
+
+| GPU | SGD | SAM | Overhead SAM/SGD |
+|---|---|---|---|
+| G4 (bảng chính) | `core_sgd_s1`, `s2`, `s3`, mean ± SD | `core_sam_s1`, `s2`, `s3`, mean ± SD | Trên G4, 3 seed |
+| T4 (bổ sung) | `core_sgd_s0`, toàn bộ 200 epochs | `core_sam_s0`, chỉ các epoch chạy T4 | Trên T4, 1 seed |
+
+- `epoch_seconds` trong `history.csv` gồm thời gian train và đánh giá validation, không gồm thời gian ghi checkpoint. Validation tốn như nhau ở SGD và SAM, nên tỷ lệ overhead đo được thấp hơn mức 2 lần của riêng phần train. Báo cáo cần ghi rõ cách đo này.
+- Epoch đầu của mỗi phiên Colab thường chậm hơn do khởi tạo CUDA và cuDNN. Dùng median hoặc bỏ epoch đầu của mỗi phiên, và áp dụng cùng một cách cho mọi run.
+- Cùng là G4 nhưng tốc độ có thể dao động giữa các phiên Colab; SD giữa các seed thể hiện dao động này.
+
+## 8. Nguồn đối chiếu
 
 - `notebooks/sam_reproduction_vi.ipynb`: `seed_everything()`, `capture_random_state()`, `collect_environment()`, `run_experiment()`, `REQUIRED_SUMMARY_FIELDS`, `REQUIRED_HISTORY_COLUMNS`
 - `docs/2026-10-23-sam-experiment-work-plan-vi.md`: Mục 6 (artifact), Giai đoạn 3 (tổng hợp core results), Mục 4.2 (run matrix)

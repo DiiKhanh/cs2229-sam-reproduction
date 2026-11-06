@@ -5,7 +5,7 @@
 - Origin Skill: experiment-agent
 - Origin Mode: plan
 - Origin Date: 2026-10-23
-- Last Updated: 2026-11-04
+- Last Updated: 2026-11-06
 - Verification Status: UNVERIFIED
 - Version Label: code_plan_v3
 
@@ -14,7 +14,7 @@
 - **Môn học:** CS2229
 - **Quy mô nhóm:** 4 thành viên
 - **Hạn báo cáo:** 30/11/2026
-- **Trạng thái thực nghiệm:** Ngày 04/11 nhóm chốt WRN-28-10 cho core matrix. Notebook `sam_reproduction_vi_v5` đã sẵn sàng cho tám core runs trên bốn branch. Cùng ngày, B hoàn tất `core_sgd_s1` và `core_sam_s1`, rồi bắt đầu `rho` ablation trên `run/rho-s1` bằng notebook stage 2 `sam_stage2_reproduction_vi_v1`
+- **Trạng thái thực nghiệm:** Ngày 04/11 nhóm chốt WRN-28-10 cho core matrix. Notebook `sam_reproduction_vi_v5` đã sẵn sàng cho tám core runs trên bốn branch. Cùng ngày, B hoàn tất `core_sgd_s1` và `core_sam_s1`, rồi bắt đầu `rho` ablation trên `run/rho-s1` bằng notebook stage 2 `sam_stage2_reproduction_vi_v1`. Ngày 06/11, tám core runs đã chạy xong và chờ review chéo; notebook `sam_stage2_extensions_vi_v1` sẵn sàng cho SGD 400 epochs và label noise trên ba branch `run/sgd400-s0`, `run/noise40-s2`, `run/noise80-s2`
 - **Bài báo:** Foret, Kleiner, Mobahi, và Neyshabur, *Sharpness-Aware Minimization for Efficiently Improving Generalization*, ICLR 2021
 - **Paper:** [OpenReview](https://openreview.net/forum?id=6Tm1mposlrM) | [arXiv](https://arxiv.org/abs/2010.01412)
 - **Code chính thức:** [google-research/sam](https://github.com/google-research/sam)
@@ -130,21 +130,34 @@ Extension runs có branch riêng. Ngày 04/11, B đã xong cặp core run và c�
 | Branch | Thành viên | Notebook | `RUN_PLAN` | `SEED` | Run IDs |
 |---|---|---|---|---:|---|
 | `run/rho-s1` | B | `sam_stage2_reproduction_vi.ipynb` | `"rho"` | 1 | `rho_001_s1`, `rho_010_s1`, `rho_020_s1` |
+| `run/sgd400-s0` | A | `sam_stage2_extensions_vi.ipynb` | `"sgd400"` | 0 | `compute_sgd400_s0` |
+| `run/noise40-s2` | C | `sam_stage2_extensions_vi.ipynb` | `"noise40"` | 2 | `noise40_sgd_s2`, `noise40_sam_s2` |
+| `run/noise80-s2` | D | `sam_stage2_extensions_vi.ipynb` | `"noise80"` | 2 | `noise80_sgd_s2`, `noise80_sam_s2` |
 
-`run/rho-s1` chỉ khác `main` ở cell cấu hình của notebook stage 2. Notebook stage 2 là file riêng để các core run đang chạy không bị ảnh hưởng bởi thay đổi `NOTEBOOK_VERSION` của notebook core.
+Mỗi branch extension chỉ khác `main` ở cell cấu hình của notebook stage 2 tương ứng. Notebook stage 2 là file riêng để các run đang chạy không bị ảnh hưởng bởi thay đổi `NOTEBOOK_VERSION` của notebook khác.
+
+Ngày 06/11, nhóm chốt hai quyết định cho các extension còn lại:
+
+- Label-noise runs dùng `rho = 0.05` ở cả 40% và 80%, giống core run, để mỗi mức noise chỉ khác nhau ở tỷ lệ noise. Paper dùng `rho = 0.1` cho phần lớn mức noise; báo cáo phải ghi rõ khác biệt này.
+- `compute_sgd400_s0` được so với SAM 200 epochs chủ yếu theo số lần tính gradient. Trục thời gian thực chỉ dùng dữ liệu G4 (seed 1-3 và `compute_sgd400_s0` nếu chạy toàn bộ trên G4), vì `core_sam_s0` chạy trên cả T4 và G4.
 
 Các extension một seed chỉ được trình bày là kết quả khám phá. Không dùng chúng để khẳng định phương pháp tốt hơn một cách ổn định. Label-noise runs dùng chung seed 2 ở cả 0%, 40% và 80% để tránh trộn ảnh hưởng của noise rate với khác biệt initialization.
 
 ## 5. Canonical notebook
 
-Nhóm duy trì một notebook nguồn cho core matrix và một bản nhân bản cho stage 2:
+Nhóm duy trì một notebook nguồn cho core matrix và hai bản nhân bản cho stage 2:
 
 ```text
 sam_reproduction_vi.ipynb           # core matrix, sam_reproduction_vi_v5
 sam_stage2_reproduction_vi.ipynb    # rho ablation, sam_stage2_reproduction_vi_v1
+sam_stage2_extensions_vi.ipynb      # SGD 400 epochs và label noise, sam_stage2_extensions_vi_v1
 ```
 
-Notebook stage 2 giữ nguyên data, model, training loop, SAM, checkpoint và artifact của `sam_reproduction_vi_v5` (ghi trong field `base_notebook_version`); chỉ thay cặp SGD/SAM bằng một dãy `RHO_VALUES = (0.01, 0.10, 0.20)` cho SAM. Với cùng seed và `rho = 0.05`, smoke test của hai notebook cho `history.csv` trùng nhau. Mọi sửa đổi training code phải áp dụng cho cả hai notebook và tăng version của cả hai.
+Notebook `rho` giữ nguyên data, model, training loop, SAM, checkpoint và artifact của `sam_reproduction_vi_v5` (ghi trong field `base_notebook_version`); chỉ thay cặp SGD/SAM bằng một dãy `RHO_VALUES = (0.01, 0.10, 0.20)` cho SAM. Với cùng seed và `rho = 0.05`, smoke test của hai notebook cho `history.csv` trùng nhau.
+
+Notebook extensions chỉ khác `sam_reproduction_vi_v5` ở các cell cấu hình và mô tả; mọi cell training, data, checkpoint và artifact giống hệt từng byte. Bảng `RUN_PLANS` chọn method, tỷ lệ label noise và số epoch cho `sgd400`, `noise40`, `noise80`. Kiểm tra ngày 06/11 trên CPU với Drive giả lập: khi plan `smoke` đặt label noise 0%, `history.csv` và các chỉ số trong `summary.json` trùng với smoke test của notebook core; plan `smoke` thật (40% noise) chạy đủ và resume đúng sau khi bị ngắt giữa run SAM.
+
+Mọi sửa đổi training code phải áp dụng cho cả ba notebook và tăng version của cả ba.
 
 Mỗi thành viên dùng cùng notebook và cùng phiên bản code. Chỉ phần đầu cell cấu hình khác nhau giữa các branch:
 

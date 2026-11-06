@@ -56,6 +56,23 @@ Cách chạy và resume giống core run (các mục bên dưới), chỉ khác:
 - Output của cell cấu hình phải có `run_plan=rho`, `seed=1`, `runs=['rho_001_s1', 'rho_010_s1', 'rho_020_s1']` và `notebook_version=sam_stage2_reproduction_vi_v1`.
 - Mỗi run tốn thời gian GPU và dung lượng Drive tương đương `core_sam_s1`; ba run cần thêm khoảng 3,4 GB trên Drive.
 
+## Stage 2: SGD 400 epochs và label noise
+
+Ba extension còn lại dùng notebook riêng `notebooks/sam_stage2_extensions_vi.ipynb`, cũng nhân bản từ `sam_reproduction_vi_v5`. Training code giữ nguyên; `RUN_PLAN` chọn method được chạy, tỷ lệ label noise và số epoch. SAM dùng `rho = 0.05` ở mọi plan, kể cả label noise (nhóm chốt ngày 06/11/2026).
+
+| Branch | Thành viên | `RUN_PLAN` | `SEED` | Run IDs | Drive cần thêm |
+|---|---|---|---:|---|---:|
+| `run/sgd400-s0` | A | `sgd400` | 0 | `compute_sgd400_s0` | ~1,1 GB |
+| `run/noise40-s2` | C | `noise40` | 2 | `noise40_sgd_s2`, `noise40_sam_s2` | ~2,3 GB |
+| `run/noise80-s2` | D | `noise80` | 2 | `noise80_sgd_s2`, `noise80_sam_s2` | ~2,3 GB |
+
+Cách chạy và resume giống core run (các mục bên dưới), chỉ khác:
+
+- Tải `notebooks/sam_stage2_extensions_vi.ipynb` từ branch được giao.
+- Output của cell cấu hình phải có đúng `run_plan`, `seed` và `runs` theo bảng trên, cùng `notebook_version=sam_stage2_extensions_vi_v1 (pipeline từ sam_reproduction_vi_v5)`.
+- `compute_sgd400_s0` tốn thời gian GPU khoảng bằng một core SAM run. Nên chạy toàn bộ trên G4 và kiểm tra cột `gpu_name`; số liệu thời gian chỉ so được với các epoch chạy trên cùng loại GPU.
+- Label-noise runs dùng seed 2 cho cả C và D để đặt cạnh `core_sgd_s2` và `core_sam_s2` (0% noise).
+
 ## Chuẩn bị Google Drive
 
 Mỗi thành viên làm một lần trên Google Drive cá nhân:
@@ -137,7 +154,8 @@ Checkpoint không được commit vào Git. Cách gom kết quả để tổng h
 │   └── 2026-11-06-stage1-stage2-overview-vi.md
 ├── notebooks/
 │   ├── sam_reproduction_vi.ipynb          # core matrix
-│   └── sam_stage2_reproduction_vi.ipynb   # stage 2: rho ablation
+│   ├── sam_stage2_reproduction_vi.ipynb   # stage 2: rho ablation
+│   └── sam_stage2_extensions_vi.ipynb     # stage 2: SGD 400 epochs và label noise
 └── tools/
     └── run_notebook_locally.py  # chạy thử notebook trên máy local với Drive giả lập
 ```

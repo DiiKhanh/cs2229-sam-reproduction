@@ -10,7 +10,7 @@ Authoritative sources, in order:
 
 1. `docs/2026-10-23-sam-experiment-work-plan-vi.md` - scope, run matrix, member roles, artifact contract, schedule.
 2. `notebooks/sam_reproduction_vi.ipynb` - the canonical training pipeline for the core matrix. There is no separate Python package.
-   `notebooks/sam_stage2_reproduction_vi.ipynb` is its stage-2 copy for the rho ablation. Its training code must stay identical to the core notebook version named in `BASE_NOTEBOOK_VERSION`; apply any training-code change to both notebooks and bump both versions.
+   `notebooks/sam_stage2_reproduction_vi.ipynb` (rho ablation) and `notebooks/sam_stage2_extensions_vi.ipynb` (SGD 400 epochs, label noise) are its stage-2 copies. Their training code must stay identical to the core notebook version named in `BASE_NOTEBOOK_VERSION`; apply any training-code change to all three notebooks and bump all three versions.
 3. `README.md` - team-facing Colab run and resume guide.
 
 ## Execution model
@@ -26,7 +26,7 @@ Authoritative sources, in order:
 - `run/core-s<k>` (k = 0..3) differs from `main` only in the branch section of the notebook's config cell: `RUN_PLAN = "core"` and `SEED = k`. Keep that diff to those two lines so `main` can be merged in cleanly.
 - Make pipeline, recipe and documentation changes on `main`, then merge `main` into the run branches.
 - Do not merge a `NOTEBOOK_VERSION` change into a run branch while that branch's runs are in progress: resume compares the full config, including the version, and refuses to continue. Coordinate with the team first.
-- Extension runs (rho ablation, SGD 400 epochs, label noise) get their own branches. `run/rho-s1` differs from `main` only in the branch section of the stage-2 notebook's config cell: `RUN_PLAN = "rho"` and `SEED = 1`.
+- Extension runs (rho ablation, SGD 400 epochs, label noise) get their own branches. Each differs from `main` only in the branch section of its stage-2 notebook's config cell: `run/rho-s1` sets `RUN_PLAN = "rho"`, `SEED = 1`; `run/sgd400-s0`, `run/noise40-s2` and `run/noise80-s2` set `RUN_PLAN` to `"sgd400"`, `"noise40"`, `"noise80"` with `SEED` 0, 2, 2.
 
 ## Changing the notebook
 
