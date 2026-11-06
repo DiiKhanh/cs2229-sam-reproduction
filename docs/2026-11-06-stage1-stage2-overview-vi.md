@@ -18,12 +18,14 @@
 ```mermaid
 flowchart LR
     S1[Stage 1: 8 core runs] --> R[Review chéo artifact]
-    R --> T[Tổng hợp core results]
-    T --> E1[Rho ablation - B]
-    T --> E2[SGD 400 epochs - A]
-    T --> E3[Label noise 40% - C]
-    T --> E4[Label noise 80% - D]
-    E1 --> F[Khóa kết quả, slides, demo]
+    R --> T[Tổng hợp core results - C]
+    R --> N[Chốt quyết định, tạo notebook extensions]
+    S1 -. B bắt đầu sớm từ 04/11 .-> E1[Rho ablation - B]
+    N --> E2[SGD 400 epochs - A]
+    N --> E3[Label noise 40% - C]
+    N --> E4[Label noise 80% - D]
+    T --> F[Khóa kết quả, slides, demo]
+    E1 --> F
     E2 --> F
     E3 --> F
     E4 --> F
