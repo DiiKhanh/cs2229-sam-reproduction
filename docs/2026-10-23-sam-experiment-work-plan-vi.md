@@ -113,10 +113,22 @@ Mọi thay đổi ảnh hưởng training phải tăng version; các run tạo b
 | `noise40_sam_s2` | C | SAM | 2 | 0.05 | 40% | 200 | Mở rộng 3 |
 | `noise80_sgd_s2` | D | SGD | 2 | 0 | 80% | 200 | Mở rộng 4 |
 | `noise80_sam_s2` | D | SAM | 2 | 0.05 | 80% | 200 | Mở rộng 4 |
+| `rn32_noise40_sgd_s0` | Bổ sung | SGD | 0 | 0 | 40% | 200 | Mở rộng 5, ResNet-32 |
+| `rn32_noise40_sam010_s0` | Bổ sung | SAM | 0 | 0.10 | 40% | 200 | Mở rộng 5, ResNet-32 |
+| `rn32_noise80_sgd_s0` | Bổ sung | SGD | 0 | 0 | 80% | 200 | Mở rộng 5, ResNet-32 |
+| `rn32_noise80_sam005_s0` | Bổ sung | SAM | 0 | 0.05 | 80% | 200 | Mở rộng 5, ResNet-32 |
+| `rn32_noise40_sgd_s1` | Bổ sung | SGD | 1 | 0 | 40% | 200 | Mở rộng 5, ResNet-32 |
+| `rn32_noise40_sam010_s1` | Bổ sung | SAM | 1 | 0.10 | 40% | 200 | Mở rộng 5, ResNet-32 |
+| `rn32_noise80_sgd_s1` | Bổ sung | SGD | 1 | 0 | 80% | 200 | Mở rộng 5, ResNet-32 |
+| `rn32_noise80_sam005_s1` | Bổ sung | SAM | 1 | 0.05 | 80% | 200 | Mở rộng 5, ResNet-32 |
 | `rn32_noise40_sgd_s2` | Bổ sung | SGD | 2 | 0 | 40% | 200 | Mở rộng 5, ResNet-32 |
 | `rn32_noise40_sam010_s2` | Bổ sung | SAM | 2 | 0.10 | 40% | 200 | Mở rộng 5, ResNet-32 |
 | `rn32_noise80_sgd_s2` | Bổ sung | SGD | 2 | 0 | 80% | 200 | Mở rộng 5, ResNet-32 |
 | `rn32_noise80_sam005_s2` | Bổ sung | SAM | 2 | 0.05 | 80% | 200 | Mở rộng 5, ResNet-32 |
+| `rn32_noise40_sgd_s3` | Bổ sung | SGD | 3 | 0 | 40% | 200 | Mở rộng 5, ResNet-32 |
+| `rn32_noise40_sam010_s3` | Bổ sung | SAM | 3 | 0.10 | 40% | 200 | Mở rộng 5, ResNet-32 |
+| `rn32_noise80_sgd_s3` | Bổ sung | SGD | 3 | 0 | 80% | 200 | Mở rộng 5, ResNet-32 |
+| `rn32_noise80_sam005_s3` | Bổ sung | SAM | 3 | 0.05 | 80% | 200 | Mở rộng 5, ResNet-32 |
 
 ### 4.3 Branch cho core runs
 
@@ -137,10 +149,16 @@ Extension runs có branch riêng. Ngày 04/11, B đã xong cặp core run và c�
 | `run/sgd400-s0` | A | `sam_stage2_extensions_vi.ipynb` | `"sgd400"` | 0 | `compute_sgd400_s0` |
 | `run/noise40-s2` | C | `sam_stage2_extensions_vi.ipynb` | `"noise40"` | 2 | `noise40_sgd_s2`, `noise40_sam_s2` |
 | `run/noise80-s2` | D | `sam_stage2_extensions_vi.ipynb` | `"noise80"` | 2 | `noise80_sgd_s2`, `noise80_sam_s2` |
+| `run/rn32-noise40-s0` | Bổ sung | `sam_stage2_resnet32_noise_vi.ipynb` | `"rn32_noise40"` | 0 | `rn32_noise40_sgd_s0`, `rn32_noise40_sam010_s0` |
+| `run/rn32-noise80-s0` | Bổ sung | `sam_stage2_resnet32_noise_vi.ipynb` | `"rn32_noise80"` | 0 | `rn32_noise80_sgd_s0`, `rn32_noise80_sam005_s0` |
+| `run/rn32-noise40-s1` | Bổ sung | `sam_stage2_resnet32_noise_vi.ipynb` | `"rn32_noise40"` | 1 | `rn32_noise40_sgd_s1`, `rn32_noise40_sam010_s1` |
+| `run/rn32-noise80-s1` | Bổ sung | `sam_stage2_resnet32_noise_vi.ipynb` | `"rn32_noise80"` | 1 | `rn32_noise80_sgd_s1`, `rn32_noise80_sam005_s1` |
 | `run/rn32-noise40-s2` | Bổ sung | `sam_stage2_resnet32_noise_vi.ipynb` | `"rn32_noise40"` | 2 | `rn32_noise40_sgd_s2`, `rn32_noise40_sam010_s2` |
 | `run/rn32-noise80-s2` | Bổ sung | `sam_stage2_resnet32_noise_vi.ipynb` | `"rn32_noise80"` | 2 | `rn32_noise80_sgd_s2`, `rn32_noise80_sam005_s2` |
+| `run/rn32-noise40-s3` | Bổ sung | `sam_stage2_resnet32_noise_vi.ipynb` | `"rn32_noise40"` | 3 | `rn32_noise40_sgd_s3`, `rn32_noise40_sam010_s3` |
+| `run/rn32-noise80-s3` | Bổ sung | `sam_stage2_resnet32_noise_vi.ipynb` | `"rn32_noise80"` | 3 | `rn32_noise80_sgd_s3`, `rn32_noise80_sam005_s3` |
 
-Ngày 08/11, sau khi stage 2 chạy xong, nhóm thêm Mở rộng 5: label noise với ResNet-32 và `rho` theo paper (0.1 ở 40%, 0.05 ở 80%). Thí nghiệm này bám sát Section 3.3 của paper hơn các run `noise*_s2` (WRN-28-10, `rho = 0.05`). Bắt đầu với seed 2 để dùng cùng tập nhãn nhiễu với `noise*_s2`; nếu kịp thời gian thì mở thêm seed 0, 1, 3 với branch `run/rn32-noise40-s<k>` và `run/rn32-noise80-s<k>`.
+Ngày 08/11, sau khi stage 2 chạy xong, nhóm thêm Mở rộng 5: label noise với ResNet-32 và `rho` theo paper (0.1 ở 40%, 0.05 ở 80%). Thí nghiệm này bám sát Section 3.3 của paper hơn các run `noise*_s2` (WRN-28-10, `rho = 0.05`). Seed 2 dùng cùng tập nhãn nhiễu với `noise*_s2`. Cùng ngày nhóm mở thêm seed 0, 1, 3, nên Mở rộng 5 có đủ bốn seed như core matrix và được báo cáo bằng mean ± SD, không chỉ là kết quả khám phá một seed.
 
 Mỗi branch extension chỉ khác `main` ở cell cấu hình của notebook stage 2 tương ứng. Notebook stage 2 là file riêng để các run đang chạy không bị ảnh hưởng bởi thay đổi `NOTEBOOK_VERSION` của notebook khác.
 
