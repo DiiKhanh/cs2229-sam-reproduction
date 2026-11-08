@@ -26,6 +26,7 @@ So sánh SGD và SAM-SGD trên CIFAR-10 trong cùng điều kiện về mô hìn
 - Notebook `sam_reproduction_vi_v5` sẵn sàng cho tám core runs trên bốn branch `run/core-s0` đến `run/core-s3`.
 - Ngày 04/11/2026: B hoàn tất `core_sgd_s1` và `core_sam_s1`, bắt đầu `rho` ablation trên branch `run/rho-s1` bằng notebook stage 2 `sam_stage2_reproduction_vi_v1`.
 - Ngày 06/11/2026: tám core runs đã chạy xong, chờ review chéo và tổng hợp. `core_sgd_s0` chạy trên T4, `core_sam_s0` chạy trên T4 rồi chuyển sang G4; các seed còn lại chạy trên G4.
+- Ngày 08/11/2026: stage 2 đã chạy xong. Thêm notebook `sam_stage2_resnet32_noise_vi_v1` cho label noise với ResNet-32 theo thiết lập của paper, bắt đầu với seed 2 trên `run/rn32-noise40-s2` và `run/rn32-noise80-s2`.
 
 Kế hoạch chi tiết, phân công và tiêu chí hoàn thành nằm trong [`docs/2026-10-23-sam-experiment-work-plan-vi.md`](docs/2026-10-23-sam-experiment-work-plan-vi.md). Tổng quan mục tiêu stage 1, stage 2 và các quyết định còn mở nằm trong [`docs/2026-11-06-stage1-stage2-overview-vi.md`](docs/2026-11-06-stage1-stage2-overview-vi.md).
 
@@ -72,6 +73,23 @@ Cách chạy và resume giống core run (các mục bên dưới), chỉ khác:
 - Output của cell cấu hình phải có đúng `run_plan`, `seed` và `runs` theo bảng trên, cùng `notebook_version=sam_stage2_extensions_vi_v1 (pipeline từ sam_reproduction_vi_v5)`.
 - `compute_sgd400_s0` tốn thời gian GPU khoảng bằng một core SAM run. Nên chạy toàn bộ trên G4 và kiểm tra cột `gpu_name`; số liệu thời gian chỉ so được với các epoch chạy trên cùng loại GPU.
 - Label-noise runs dùng seed 2 cho cả C và D để đặt cạnh `core_sgd_s2` và `core_sam_s2` (0% noise).
+
+## Stage 2: label noise với ResNet-32 theo paper
+
+Notebook `notebooks/sam_stage2_resnet32_noise_vi.ipynb` chạy lại thí nghiệm label noise theo đúng model và `rho` của paper (Section 3.3, Table 4): ResNet-32 (He et al., 2016, khoảng 0,46M tham số), 200 epochs, `rho = 0.1` ở 40% noise và `rho = 0.05` ở 80% noise. Notebook nhân bản từ `sam_stage2_extensions_vi_v1`; chỉ cell model có thêm `resnet32`, còn data, label noise, training loop, SAM, checkpoint và artifact giữ nguyên. Paper không ghi batch size, learning rate, weight decay và augmentation cho thí nghiệm này, nên notebook dùng recipe chung của nhóm.
+
+| Branch | `RUN_PLAN` | `SEED` | Run IDs |
+|---|---|---:|---|
+| `run/rn32-noise40-s2` | `rn32_noise40` | 2 | `rn32_noise40_sgd_s2`, `rn32_noise40_sam010_s2` |
+| `run/rn32-noise80-s2` | `rn32_noise80` | 2 | `rn32_noise80_sgd_s2`, `rn32_noise80_sam005_s2` |
+
+Cách chạy và resume giống core run (các mục bên dưới), chỉ khác:
+
+- Tải `notebooks/sam_stage2_resnet32_noise_vi.ipynb` từ branch được giao. Hai branch độc lập, có thể chạy song song trên hai phiên Colab.
+- Output của cell cấu hình phải có `model=resnet32`, đúng `run_plan`, `seed`, `rho` và `runs` theo bảng trên, cùng `notebook_version=sam_stage2_resnet32_noise_vi_v1 (pipeline từ sam_reproduction_vi_v5)`.
+- Seed 2 nhận đúng tập nhãn nhiễu mà `noise40_*_s2` và `noise80_*_s2` (WRN-28-10) đã dùng. Nếu thời gian cho phép, mở thêm seed 0, 1, 3 bằng branch `run/rn32-noise40-s<k>` và `run/rn32-noise80-s<k>`.
+- Mỗi checkpoint ResNet-32 chỉ vài MB. Ghi lại `epoch_seconds` và `gpu_name` của seed 2 để ước lượng thời gian trước khi mở thêm seed.
+- Notebook chọn checkpoint bằng validation nhãn sạch. Paper không ghi checkpoint dùng để báo cáo; khi đặt số cạnh Table 4, báo cáo thêm test accuracy tại `last_checkpoint.pt`.
 
 ## Chuẩn bị Google Drive
 
@@ -155,7 +173,8 @@ Checkpoint không được commit vào Git. Cách gom kết quả để tổng h
 ├── notebooks/
 │   ├── sam_reproduction_vi.ipynb          # core matrix
 │   ├── sam_stage2_reproduction_vi.ipynb   # stage 2: rho ablation
-│   └── sam_stage2_extensions_vi.ipynb     # stage 2: SGD 400 epochs và label noise
+│   ├── sam_stage2_extensions_vi.ipynb     # stage 2: SGD 400 epochs và label noise
+│   └── sam_stage2_resnet32_noise_vi.ipynb # stage 2: label noise với ResNet-32 theo paper
 └── tools/
     └── run_notebook_locally.py  # chạy thử notebook trên máy local với Drive giả lập
 ```

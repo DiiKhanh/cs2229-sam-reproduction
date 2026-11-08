@@ -113,6 +113,10 @@ Mọi thay đổi ảnh hưởng training phải tăng version; các run tạo b
 | `noise40_sam_s2` | C | SAM | 2 | 0.05 | 40% | 200 | Mở rộng 3 |
 | `noise80_sgd_s2` | D | SGD | 2 | 0 | 80% | 200 | Mở rộng 4 |
 | `noise80_sam_s2` | D | SAM | 2 | 0.05 | 80% | 200 | Mở rộng 4 |
+| `rn32_noise40_sgd_s2` | Bổ sung | SGD | 2 | 0 | 40% | 200 | Mở rộng 5, ResNet-32 |
+| `rn32_noise40_sam010_s2` | Bổ sung | SAM | 2 | 0.10 | 40% | 200 | Mở rộng 5, ResNet-32 |
+| `rn32_noise80_sgd_s2` | Bổ sung | SGD | 2 | 0 | 80% | 200 | Mở rộng 5, ResNet-32 |
+| `rn32_noise80_sam005_s2` | Bổ sung | SAM | 2 | 0.05 | 80% | 200 | Mở rộng 5, ResNet-32 |
 
 ### 4.3 Branch cho core runs
 
@@ -133,6 +137,10 @@ Extension runs có branch riêng. Ngày 04/11, B đã xong cặp core run và c�
 | `run/sgd400-s0` | A | `sam_stage2_extensions_vi.ipynb` | `"sgd400"` | 0 | `compute_sgd400_s0` |
 | `run/noise40-s2` | C | `sam_stage2_extensions_vi.ipynb` | `"noise40"` | 2 | `noise40_sgd_s2`, `noise40_sam_s2` |
 | `run/noise80-s2` | D | `sam_stage2_extensions_vi.ipynb` | `"noise80"` | 2 | `noise80_sgd_s2`, `noise80_sam_s2` |
+| `run/rn32-noise40-s2` | Bổ sung | `sam_stage2_resnet32_noise_vi.ipynb` | `"rn32_noise40"` | 2 | `rn32_noise40_sgd_s2`, `rn32_noise40_sam010_s2` |
+| `run/rn32-noise80-s2` | Bổ sung | `sam_stage2_resnet32_noise_vi.ipynb` | `"rn32_noise80"` | 2 | `rn32_noise80_sgd_s2`, `rn32_noise80_sam005_s2` |
+
+Ngày 08/11, sau khi stage 2 chạy xong, nhóm thêm Mở rộng 5: label noise với ResNet-32 và `rho` theo paper (0.1 ở 40%, 0.05 ở 80%). Thí nghiệm này bám sát Section 3.3 của paper hơn các run `noise*_s2` (WRN-28-10, `rho = 0.05`). Bắt đầu với seed 2 để dùng cùng tập nhãn nhiễu với `noise*_s2`; nếu kịp thời gian thì mở thêm seed 0, 1, 3 với branch `run/rn32-noise40-s<k>` và `run/rn32-noise80-s<k>`.
 
 Mỗi branch extension chỉ khác `main` ở cell cấu hình của notebook stage 2 tương ứng. Notebook stage 2 là file riêng để các run đang chạy không bị ảnh hưởng bởi thay đổi `NOTEBOOK_VERSION` của notebook khác.
 
@@ -151,13 +159,16 @@ Nhóm duy trì một notebook nguồn cho core matrix và hai bản nhân bản 
 sam_reproduction_vi.ipynb           # core matrix, sam_reproduction_vi_v5
 sam_stage2_reproduction_vi.ipynb    # rho ablation, sam_stage2_reproduction_vi_v1
 sam_stage2_extensions_vi.ipynb      # SGD 400 epochs và label noise, sam_stage2_extensions_vi_v1
+sam_stage2_resnet32_noise_vi.ipynb  # label noise với ResNet-32, sam_stage2_resnet32_noise_vi_v1
 ```
 
 Notebook `rho` giữ nguyên data, model, training loop, SAM, checkpoint và artifact của `sam_reproduction_vi_v5` (ghi trong field `base_notebook_version`); chỉ thay cặp SGD/SAM bằng một dãy `RHO_VALUES = (0.01, 0.10, 0.20)` cho SAM. Với cùng seed và `rho = 0.05`, smoke test của hai notebook cho `history.csv` trùng nhau.
 
 Notebook extensions chỉ khác `sam_reproduction_vi_v5` ở các cell cấu hình và mô tả; mọi cell training, data, checkpoint và artifact giống hệt từng byte. Bảng `RUN_PLANS` chọn method, tỷ lệ label noise và số epoch cho `sgd400`, `noise40`, `noise80`. Kiểm tra ngày 06/11 trên CPU với Drive giả lập: khi plan `smoke` đặt label noise 0%, `history.csv` và các chỉ số trong `summary.json` trùng với smoke test của notebook core; plan `smoke` thật (40% noise) chạy đủ và resume đúng sau khi bị ngắt giữa run SAM.
 
-Mọi sửa đổi training code phải áp dụng cho cả ba notebook và tăng version của cả ba.
+Notebook ResNet-32 nhân bản từ `sam_stage2_extensions_vi_v1`. Ngoài cell cấu hình và mô tả, chỉ cell model khác: thêm `resnet32` (He et al., 2016, 464.154 tham số); các biến thể WideResNet và mọi cell training, data, checkpoint, artifact giữ nguyên từng byte. Bảng `RUN_PLANS` chọn tỷ lệ label noise và `rho` cho `rn32_noise40`, `rn32_noise80`. Kiểm tra ngày 08/11 trên CPU với Drive giả lập: plan `smoke` (ResNet-32, 40% noise, `rho = 0.1`) chạy đủ và resume đúng sau khi bị ngắt giữa run SAM; khi plan `smoke` đặt WRN-16-1 và `rho = 0.05`, `history.csv` và các chỉ số trong `summary.json` trùng với smoke test của notebook extensions; ở seed 2, `NoisySubset` đổi đúng 40,00% và 80,00% nhãn, trùng với nhãn của notebook extensions.
+
+Mọi sửa đổi training code phải áp dụng cho cả bốn notebook và tăng version của cả bốn.
 
 Mỗi thành viên dùng cùng notebook và cùng phiên bản code. Chỉ phần đầu cell cấu hình khác nhau giữa các branch:
 

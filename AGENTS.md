@@ -11,6 +11,7 @@ Authoritative sources, in order:
 1. `docs/2026-10-23-sam-experiment-work-plan-vi.md` - scope, run matrix, member roles, artifact contract, schedule.
 2. `notebooks/sam_reproduction_vi.ipynb` - the canonical training pipeline for the core matrix. There is no separate Python package.
    `notebooks/sam_stage2_reproduction_vi.ipynb` (rho ablation) and `notebooks/sam_stage2_extensions_vi.ipynb` (SGD 400 epochs, label noise) are its stage-2 copies. Their training code must stay identical to the core notebook version named in `BASE_NOTEBOOK_VERSION`; apply any training-code change to all three notebooks and bump all three versions.
+   `notebooks/sam_stage2_resnet32_noise_vi.ipynb` (ResNet-32 label noise, following Section 3.3 of the paper) is a copy of the extensions notebook whose model cell also defines `resnet32`; every other training cell matches the extensions notebook. Apply training-code changes to it as well and bump its version.
 3. `README.md` - team-facing Colab run and resume guide.
 
 ## Execution model
@@ -26,7 +27,7 @@ Authoritative sources, in order:
 - `run/core-s<k>` (k = 0..3) differs from `main` only in the branch section of the notebook's config cell: `RUN_PLAN = "core"` and `SEED = k`. Keep that diff to those two lines so `main` can be merged in cleanly.
 - Make pipeline, recipe and documentation changes on `main`, then merge `main` into the run branches.
 - Do not merge a `NOTEBOOK_VERSION` change into a run branch while that branch's runs are in progress: resume compares the full config, including the version, and refuses to continue. Coordinate with the team first.
-- Extension runs (rho ablation, SGD 400 epochs, label noise) get their own branches. Each differs from `main` only in the branch section of its stage-2 notebook's config cell: `run/rho-s1` sets `RUN_PLAN = "rho"`, `SEED = 1`; `run/sgd400-s0`, `run/noise40-s2` and `run/noise80-s2` set `RUN_PLAN` to `"sgd400"`, `"noise40"`, `"noise80"` with `SEED` 0, 2, 2.
+- Extension runs (rho ablation, SGD 400 epochs, label noise) get their own branches. Each differs from `main` only in the branch section of its stage-2 notebook's config cell: `run/rho-s1` sets `RUN_PLAN = "rho"`, `SEED = 1`; `run/sgd400-s0`, `run/noise40-s2` and `run/noise80-s2` set `RUN_PLAN` to `"sgd400"`, `"noise40"`, `"noise80"` with `SEED` 0, 2, 2. `run/rn32-noise40-s<k>` and `run/rn32-noise80-s<k>` set `RUN_PLAN` to `"rn32_noise40"` or `"rn32_noise80"` with `SEED = k` in the ResNet-32 notebook.
 
 ## Changing the notebook
 
@@ -46,7 +47,7 @@ python tools/run_notebook_locally.py notebooks/sam_reproduction_vi.ipynb \
     --drive /tmp/sam-drive --runtime /tmp/sam-runtime --plan smoke --seed 0
 ```
 
-It must print `NOTEBOOK_OK`. The same command verifies `notebooks/sam_stage2_reproduction_vi.ipynb` with `--plan smoke`. For changes touching checkpointing or resume, also kill the process mid-run, rerun the same command, and confirm `history.csv` and `summary.json` match an uninterrupted run with the same seed. The smoke plan uses WRN-16-1 on a 1,024-image subset; it validates the pipeline, not WRN-28-10 runtime or memory. State plainly when a change has not been verified on a Colab GPU.
+It must print `NOTEBOOK_OK`. The same command verifies each stage-2 notebook with `--plan smoke`; the ResNet-32 notebook's smoke plan uses ResNet-32 itself. For changes touching checkpointing or resume, also kill the process mid-run, rerun the same command, and confirm `history.csv` and `summary.json` match an uninterrupted run with the same seed. The smoke plan uses WRN-16-1 on a 1,024-image subset; it validates the pipeline, not WRN-28-10 runtime or memory. State plainly when a change has not been verified on a Colab GPU.
 
 ## Research integrity
 
